@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Shopping Cart - ShopSphere{% endblock %}
+
+{% block content %}
+  <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 25px;">
+    <i class="bi bi-cart3"></i> Your Shopping Cart
+  </h1>
+
+  {% if items %}
+    <div class="cart-layout">
+      <!-- Cart Items Table Card -->
+      <div class="cart-items-card">
+        <table class="cart-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Price</th>
+              <th>Quantity</th>
+              <th>Subtotal</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in items %}
+              <tr>
+                <td>
+                  <div class="cart-prod-flex">
+                    <img src="{{ item.product.display_image }}" alt="{{ item.product.name }}" class="cart-prod-thumb">
+                    <div>
+                      <a href="{% url 'product_detail' slug=item.product.slug %}" style="font-weight: 700; color: var(--text-main);">
+                        {{ item.product.name }}
+                      </a>
+                      <div style="font-size: 0.8rem; color: var(--text-muted);">
+                        Stock: {{ item.product.stock }} available
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td style="font-weight: 600;">
+                  ${{ item.product.effective_price }}
+                </td>
+                <td>
+                  <form action="{% url 'update_cart_item' item_id=item.id %}" method="POST" class="qty-btn-group">
+                    {% csrf_token %}
+                    <button type="submit" name="action" value="decrement" title="Decrease">-</button>
+                    <span>{{ item.quantity }}</span>
+                    <button type="submit" name="action" value="increment" title="Increase">+</button>
+                  </form>
+                </td>
+                <td style="font-weight: 700; color: var(--secondary);">
+                  ${{ item.subtotal }}
+                </td>
+                <td>
+                  <form action="{% url 'remove_cart_item' item_id=item.id %}" method="POST" onsubmit="return confirm('Remove this product from your cart?');">
+                    {% csrf_token %}
+                    <button type="submit" style="background:none; border:none; color: var(--danger); cursor:pointer; font-size: 1.1rem;" title="Remove Item">
+                      <i class="bi bi-trash3"></i>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
+          <a href="{% url 'home' %}" class="btn btn-outline" style="width: auto;">
+            <i class="bi bi-arrow-left"></i> Continue Shopping
+          </a>
+        </div>
+      </div>
+
+      <!-- Order Summary Card -->
+      <div class="cart-summary-card">
+        <h2 style="font-size: 1.3rem; font-weight: 800; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+          Order Summary
+        </h2>
+
+        <div class="summary-row">
+          <span style="color: var(--text-muted);">Subtotal ({{ cart.total_items }} items)</span>
+          <span style="font-weight: 700;">${{ subtotal }}</span>
+        </div>
+
+        <div class="summary-row">
+          <span style="color: var(--text-muted);">Estimated Shipping</span>
+          <span>
+            {% if shipping_cost == 0 %}
+              <strong style="color: var(--accent);">FREE</strong>
+            {% else %}
+              ${{ shipping_cost }}
+            {% endif %}
+          </span>
+        </div>
+
+        {% if subtotal < free_shipping_threshold %}
+          <div style="background-color: var(--primary-light); padding: 8px 12px; border-radius: var(--radius-sm); font-size: 0.8rem; color: var(--primary); margin: 10px 0;">
+            <i class="bi bi-info-circle"></i> Add ${{ free_shipping_threshold|floatformat:2 }} or more to qualify for <strong>FREE shipping</strong>!
+          </div>
+        {% endif %}
+
+        <div class="summary-row total">
+          <span>Estimated Total</span>
+          <span style="color: var(--primary);">${{ total }}</span>
+        </div>
+
+        <div style="margin-top: 25px;">
+          {% if user.is_authenticated %}
+            <a href="{% url 'checkout' %}" class="btn btn-primary" style="font-size: 1.05rem; padding: 14px;">
+              Proceed to Checkout <i class="bi bi-arrow-right"></i>
+            </a>
+          {% else %}
+            <a href="{% url 'login' %}?next={% url 'checkout' %}" class="btn btn-primary" style="font-size: 1.05rem; padding: 14px;">
+              Login to Checkout <i class="bi bi-box-arrow-in-right"></i>
+            </a>
+            <p style="text-align: center; font-size: 0.82rem; color: var(--text-muted); margin-top: 10px;">
+              Don't have an account? <a href="{% url 'register' %}">Register here</a>
+            </p>
+          {% endif %}
+        </div>
+
+        <div style="margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 18px; font-size: 0.82rem; color: var(--text-muted); text-align: center;">
+          <p><i class="bi bi-lock-fill"></i> Bank-grade 256-bit SSL encrypted checkout</p>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <div style="text-align: center; padding: 70px 20px; background-color: #fff; border-radius: var(--radius-lg); border: 1px solid var(--border-color);">
+      <i class="bi bi-cart-x" style="font-size: 3.5rem; color: var(--text-muted); margin-bottom: 15px; display: inline-block;"></i>
+      <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 8px;">Your cart is currently empty</h2>
+      <p style="color: var(--text-muted); margin-bottom: 25px;">Looks like you haven't added anything to your cart yet.</p>
+      <a href="{% url 'home' %}" class="btn btn-primary" style="width: auto; padding: 12px 28px;">
+        <i class="bi bi-bag"></i> Discover Products
+      </a>
+    </div>
+  {% endif %}
+{% endblock %}

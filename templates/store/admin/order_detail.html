@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Order #{{ order.order_number }} - Admin Portal{% endblock %}
+
+{% block content %}
+  <div style="margin-bottom: 20px;">
+    <a href="{% url 'admin_order_list' %}" style="font-size: 0.9rem; color: var(--text-muted);">
+      <i class="bi bi-arrow-left"></i> Back to Orders List
+    </a>
+  </div>
+
+  <div class="checkout-grid">
+    <!-- Order Status Management Form -->
+    <div class="form-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 20px;">
+        <h1 style="font-size: 1.5rem; font-weight: 800;">
+          Order #<span style="color: var(--primary); font-family: monospace;">{{ order.order_number }}</span>
+        </h1>
+        <span class="status-badge status-{{ order.status }}">
+          {{ order.status }}
+        </span>
+      </div>
+
+      <form method="POST">
+        {% csrf_token %}
+
+        <div class="form-group">
+          <label for="{{ form.status.id_for_label }}">Update Order Fulfillment Status *</label>
+          {{ form.status }}
+          <small style="color: var(--text-muted);">Updating this status directly reflects on the customer's visual tracking screen.</small>
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.payment_status.id_for_label }}">Payment Status *</label>
+          {{ form.payment_status }}
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.tracking_number.id_for_label }}">Carrier Tracking Number</label>
+          {{ form.tracking_number }}
+          <small style="color: var(--text-muted);">e.g. TRK-USPS-88492049</small>
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.admin_notes.id_for_label }}">Fulfillment & Courier Notes</label>
+          {{ form.admin_notes }}
+        </div>
+
+        <div style="margin-top: 25px; display: flex; gap: 15px;">
+          <button type="submit" class="btn btn-primary" style="flex: 2; padding: 12px;">
+            <i class="bi bi-check2-circle"></i> Save & Update Status
+          </button>
+          <a href="{% url 'order_tracking' order_number=order.order_number %}" target="_blank" class="btn btn-outline" style="flex: 1; padding: 12px;">
+            <i class="bi bi-eye"></i> View as Customer
+          </a>
+        </div>
+      </form>
+    </div>
+
+    <!-- Customer & Items Information -->
+    <div>
+      <div class="cart-summary-card" style="margin-bottom: 25px;">
+        <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+          Customer & Delivery Address
+        </h2>
+
+        <p><strong>Customer:</strong> {{ order.full_name }} ({{ order.user.username }})</p>
+        <p><strong>Email:</strong> {{ order.email }}</p>
+        <p><strong>Phone:</strong> {{ order.phone }}</p>
+        <p style="margin-top: 10px;"><strong>Shipping Address:</strong><br>
+          {{ order.address }}<br>
+          {{ order.city }}, {{ order.state }} - {{ order.postal_code }}
+        </p>
+      </div>
+
+      <div class="cart-summary-card">
+        <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+          Ordered Items ({{ order.items.count }})
+        </h2>
+
+        {% for item in order.items.all %}
+          <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.9rem;">
+            <span>{{ item.quantity }}x {{ item.product_name }}</span>
+            <strong>${{ item.total_price }}</strong>
+          </div>
+        {% endfor %}
+
+        <div class="summary-row total" style="margin-top: 15px;">
+          <span>Total Collected:</span>
+          <span style="color: var(--primary);">${{ order.total_amount }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

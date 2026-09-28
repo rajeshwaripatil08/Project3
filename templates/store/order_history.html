@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Orders - ShopSphere{% endblock %}
+
+{% block content %}
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+    <h1 style="font-size: 1.8rem; font-weight: 800;">
+      <i class="bi bi-box-seam"></i> Order History & Tracking
+    </h1>
+    <a href="{% url 'home' %}" class="btn btn-outline" style="width: auto;">
+      <i class="bi bi-cart"></i> Browse Store
+    </a>
+  </div>
+
+  {% if orders %}
+    <div class="data-table-card">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Order #</th>
+            <th>Date Placed</th>
+            <th>Items</th>
+            <th>Total</th>
+            <th>Payment</th>
+            <th>Status</th>
+            <th style="text-align: right;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in orders %}
+            <tr>
+              <td>
+                <strong style="color: var(--primary); font-family: monospace;">{{ order.order_number }}</strong>
+              </td>
+              <td>{{ order.created_at|date:"M d, Y" }}</td>
+              <td>{{ order.items.count }} item{{ order.items.count|pluralize }}</td>
+              <td><strong>${{ order.total_amount }}</strong></td>
+              <td>
+                <span class="status-badge" style="background-color: #f1f5f9; color: var(--text-main);">
+                  {{ order.payment_status }} ({{ order.get_payment_method_display }})
+                </span>
+              </td>
+              <td>
+                <span class="status-badge status-{{ order.status }}">
+                  {{ order.status }}
+                </span>
+              </td>
+              <td style="text-align: right;">
+                <a href="{% url 'order_tracking' order_number=order.order_number %}" class="btn btn-primary btn-sm">
+                  <i class="bi bi-geo-alt"></i> Track Order
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div style="text-align: center; padding: 60px 20px; background-color: #fff; border-radius: var(--radius-lg); border: 1px solid var(--border-color);">
+      <i class="bi bi-inbox" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 12px; display: inline-block;"></i>
+      <h3 style="font-size: 1.4rem; font-weight: 700;">No orders placed yet</h3>
+      <p style="color: var(--text-muted); margin: 8px 0 20px;">Once you place an order, you can monitor its live fulfillment and delivery here.</p>
+      <a href="{% url 'home' %}" class="btn btn-primary" style="width: auto;">Start Shopping</a>
+    </div>
+  {% endif %}
+{% endblock %}

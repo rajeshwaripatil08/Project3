@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Confirm Delete - Admin Portal{% endblock %}
+
+{% block content %}
+  <div style="max-width: 500px; margin: 40px auto;">
+    <div class="form-card" style="text-align: center;">
+      <div style="font-size: 3rem; color: var(--danger); margin-bottom: 12px;">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+      </div>
+
+      <h1 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 12px;">Delete {{ type }}?</h1>
+      <p style="color: var(--text-muted); margin-bottom: 25px;">
+        Are you sure you want to permanently delete <strong>"{{ object.name }}"</strong>? This action cannot be undone.
+      </p>
+
+      <form method="POST">
+        {% csrf_token %}
+        <div style="display: flex; gap: 15px;">
+          <button type="submit" class="btn btn-danger" style="flex: 1; padding: 12px;">
+            Yes, Delete Permanently
+          </button>
+          <a href="{% url 'admin_product_list' %}" class="btn btn-secondary" style="flex: 1; padding: 12px;">
+            Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

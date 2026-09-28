@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Categories - Admin Portal{% endblock %}
+
+{% block content %}
+  <div class="admin-header">
+    <div>
+      <h1 style="font-size: 1.8rem; font-weight: 800;">
+        <i class="bi bi-tag" style="color: var(--primary);"></i> Category Management
+      </h1>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">Organize products into intuitive catalog departments</p>
+    </div>
+  </div>
+
+  <!-- Admin Navigation Tabs -->
+  <div class="admin-nav-tabs">
+    <a href="{% url 'admin_dashboard' %}" class="admin-tab-link">Dashboard</a>
+    <a href="{% url 'admin_product_list' %}" class="admin-tab-link">Products & Stock</a>
+    <a href="{% url 'admin_order_list' %}" class="admin-tab-link">Orders & Tracking</a>
+    <a href="{% url 'admin_category_list' %}" class="admin-tab-link active">Categories</a>
+  </div>
+
+  <div class="checkout-grid">
+    <!-- Existing Categories List -->
+    <div class="data-table-card">
+      <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 18px;">Active Categories</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Slug</th>
+            <th>Products Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cat in categories %}
+            <tr>
+              <td>
+                <i class="bi {{ cat.icon_name }}" style="margin-right: 6px; color: var(--primary);"></i>
+                <strong>{{ cat.name }}</strong>
+              </td>
+              <td><code>{{ cat.slug }}</code></td>
+              <td>{{ cat.product_count }} product{{ cat.product_count|pluralize }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Create New Category Form -->
+    <div class="form-card" style="height: fit-content;">
+      <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 18px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+        Add New Category
+      </h3>
+
+      <form method="POST">
+        {% csrf_token %}
+
+        <div class="form-group">
+          <label for="{{ form.name.id_for_label }}">Category Name *</label>
+          {{ form.name }}
+          {{ form.name.errors }}
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.description.id_for_label }}">Description</label>
+          {{ form.description }}
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.icon_name.id_for_label }}">Bootstrap Icon Class</label>
+          {{ form.icon_name }}
+          <small style="color: var(--text-muted);">e.g. bi-laptop, bi-phone, bi-watch, bi-bag, bi-tag</small>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="margin-top: 15px; padding: 12px;">
+          <i class="bi bi-plus-circle"></i> Create Category
+        </button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

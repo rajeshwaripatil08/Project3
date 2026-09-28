@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Account - ShopSphere{% endblock %}
+
+{% block content %}
+  <div style="max-width: 900px; margin: 0 auto;">
+    <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 25px;">
+      <i class="bi bi-person-circle"></i> My Account Profile
+    </h1>
+
+    <div class="checkout-grid" style="grid-template-columns: 1fr 2fr;">
+      <!-- Profile Info Card -->
+      <div class="form-card">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <div style="width: 80px; height: 80px; border-radius: 50%; background-color: var(--primary-light); color: var(--primary); font-size: 2.2rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;">
+            <i class="bi bi-person"></i>
+          </div>
+          <h2 style="font-size: 1.25rem; font-weight: 700;">{{ user.username }}</h2>
+          <span style="font-size: 0.85rem; color: var(--text-muted);">{{ user.email|default:"No email set" }}</span>
+          {% if user.is_staff %}
+            <div style="margin-top: 8px;">
+              <span class="admin-badge-nav">Staff / Administrator</span>
+            </div>
+          {% endif %}
+        </div>
+
+        <div style="border-top: 1px solid var(--border-color); padding-top: 15px; font-size: 0.9rem;">
+          <p style="margin-bottom: 8px;"><strong>Full Name:</strong> {{ user.get_full_name|default:"Not provided" }}</p>
+          <p style="margin-bottom: 8px;"><strong>Member Since:</strong> {{ user.date_joined|date:"M Y" }}</p>
+        </div>
+
+        <div style="margin-top: 20px;">
+          <a href="{% url 'logout' %}" class="btn btn-outline" style="width: 100%;">
+            <i class="bi bi-box-arrow-right"></i> Log Out
+          </a>
+        </div>
+      </div>
+
+      <!-- Recent Orders List -->
+      <div class="form-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+          <h3 style="font-size: 1.2rem; font-weight: 700;">Recent Orders</h3>
+          <a href="{% url 'order_history' %}" style="font-size: 0.85rem; font-weight: 600;">View All</a>
+        </div>
+
+        {% if recent_orders %}
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            {% for o in recent_orders %}
+              <div style="padding: 12px; background-color: var(--bg-body); border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border-color);">
+                <div>
+                  <div style="font-family: monospace; font-weight: 700; color: var(--primary);">{{ o.order_number }}</div>
+                  <div style="font-size: 0.8rem; color: var(--text-muted);">{{ o.created_at|date:"M d, Y" }} &bull; {{ o.items.count }} items</div>
+                </div>
+                <div style="text-align: right;">
+                  <span class="status-badge status-{{ o.status }}" style="font-size: 0.75rem;">{{ o.status }}</span>
+                  <div style="margin-top: 6px;">
+                    <a href="{% url 'order_tracking' order_number=o.order_number %}" style="font-size: 0.82rem; font-weight: 600;">
+                      Track &rarr;
+                    </a>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p style="color: var(--text-muted); font-size: 0.9rem;">You haven't placed any orders yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

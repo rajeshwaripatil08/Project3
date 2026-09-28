@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Checkout - ShopSphere{% endblock %}
+
+{% block content %}
+  <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 25px;">
+    <i class="bi bi-shield-check"></i> Secure Checkout
+  </h1>
+
+  <form method="POST" action="{% url 'checkout' %}">
+    {% csrf_token %}
+    <div class="checkout-grid">
+      <!-- Shipping Information & Payment Form -->
+      <div class="form-card">
+        <h2 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+          1. Shipping Details
+        </h2>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="{{ form.full_name.id_for_label }}">Full Name *</label>
+            {{ form.full_name }}
+            {{ form.full_name.errors }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.email.id_for_label }}">Email Address *</label>
+            {{ form.email }}
+            {{ form.email.errors }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.phone.id_for_label }}">Phone Number *</label>
+          {{ form.phone }}
+          {{ form.phone.errors }}
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.address.id_for_label }}">Shipping Street Address *</label>
+          {{ form.address }}
+          {{ form.address.errors }}
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="{{ form.city.id_for_label }}">City *</label>
+            {{ form.city }}
+            {{ form.city.errors }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.state.id_for_label }}">State / Province *</label>
+            {{ form.state }}
+            {{ form.state.errors }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.postal_code.id_for_label }}">Postal / ZIP Code *</label>
+          {{ form.postal_code }}
+          {{ form.postal_code.errors }}
+        </div>
+
+        <h2 style="font-size: 1.3rem; font-weight: 700; margin: 30px 0 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+          2. Payment Method
+        </h2>
+
+        <div class="form-group">
+          <label style="margin-bottom: 10px;">Choose how you want to pay:</label>
+          <div class="payment-options">
+            <label class="payment-card-label">
+              <input type="radio" name="payment_method" value="cod" checked>
+              <div>
+                <strong>Cash on Delivery (COD)</strong>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Pay in cash or UPI when your parcel arrives at your doorstep.</p>
+              </div>
+            </label>
+
+            <label class="payment-card-label">
+              <input type="radio" name="payment_method" value="card">
+              <div>
+                <strong>Credit / Debit Card (Mock Online)</strong>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Instant simulation - automatically marks order as paid.</p>
+              </div>
+            </label>
+
+            <label class="payment-card-label">
+              <input type="radio" name="payment_method" value="upi">
+              <div>
+                <strong>UPI / Digital Wallet (Mock Online)</strong>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">GPay / PhonePe / Paytm instant simulation.</p>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Summary Column -->
+      <div class="cart-summary-card" style="height: fit-content;">
+        <h2 style="font-size: 1.3rem; font-weight: 800; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+          Order Summary ({{ items|length }} Item{{ items|length|pluralize }})
+        </h2>
+
+        <div style="max-height: 240px; overflow-y: auto; margin-bottom: 15px; padding-right: 5px;">
+          {% for item in items %}
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 0.9rem;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <img src="{{ item.product.display_image }}" alt="{{ item.product.name }}" style="width: 44px; height: 44px; object-fit: cover; border-radius: var(--radius-sm);">
+                <div>
+                  <div style="font-weight: 600; line-height: 1.2;">{{ item.product.name|truncatechars:26 }}</div>
+                  <div style="font-size: 0.78rem; color: var(--text-muted);">Qty: {{ item.quantity }} × ${{ item.product.effective_price }}</div>
+                </div>
+              </div>
+              <div style="font-weight: 700;">${{ item.subtotal }}</div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <div class="summary-row" style="border-top: 1px solid var(--border-color); padding-top: 12px;">
+          <span style="color: var(--text-muted);">Subtotal</span>
+          <span style="font-weight: 700;">${{ subtotal }}</span>
+        </div>
+
+        <div class="summary-row">
+          <span style="color: var(--text-muted);">Shipping</span>
+          <span>
+            {% if shipping_cost == 0 %}
+              <strong style="color: var(--accent);">FREE</strong>
+            {% else %}
+              ${{ shipping_cost }}
+            {% endif %}
+          </span>
+        </div>
+
+        <div class="summary-row total">
+          <span>Total Amount</span>
+          <span style="color: var(--primary);">${{ total }}</span>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="margin-top: 25px; padding: 14px; font-size: 1.05rem;">
+          <i class="bi bi-lock-fill"></i> Place Order Now
+        </button>
+
+        <p style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 14px;">
+          By placing your order, you agree to ShopSphere's terms of service and privacy policy.
+        </p>
+      </div>
+    </div>
+  </form>
+{% endblock %}

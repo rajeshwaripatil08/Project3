@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Track Order #{{ order.order_number }} - ShopSphere{% endblock %}
+
+{% block content %}
+  <div style="margin-bottom: 20px;">
+    <a href="{% url 'order_history' %}" style="font-size: 0.9rem; color: var(--text-muted);">
+      <i class="bi bi-arrow-left"></i> Back to My Orders
+    </a>
+  </div>
+
+  <div class="tracking-card">
+    <div class="tracking-header">
+      <div>
+        <h1 style="font-size: 1.7rem; font-weight: 800; margin-bottom: 6px;">
+          Order #<span style="font-family: monospace; color: var(--primary);">{{ order.order_number }}</span>
+        </h1>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">
+          Placed on {{ order.created_at|date:"F d, Y at h:i A" }}
+        </p>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span class="status-badge status-{{ order.status }}" style="font-size: 0.95rem; padding: 6px 14px;">
+          Current Status: {{ order.status }}
+        </span>
+        {% if user.is_staff %}
+          <a href="{% url 'admin_order_detail' order_number=order.order_number %}" class="btn btn-secondary btn-sm">
+            <i class="bi bi-pencil"></i> Admin Edit
+          </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Visual Tracking Progress Bar -->
+    {% if order.status == 'Cancelled' %}
+      <div class="alert alert-danger" style="margin: 20px 0;">
+        <i class="bi bi-x-circle-fill" style="font-size: 1.2rem; margin-right: 8px;"></i>
+        This order has been <strong>Cancelled</strong>. If you have questions, please reach out to customer support.
+      </div>
+    {% else %}
+      <div class="timeline">
+        <!-- Step 1: Placed -->
+        <div class="timeline-step {% if order.status_step >= 1 %}completed{% endif %} {% if order.status_step == 1 %}active{% endif %}">
+          <div class="step-icon">
+            <i class="bi bi-check-lg"></i>
+          </div>
+          <div class="step-title">Order Placed</div>
+          <div class="step-desc">{{ order.created_at|date:"M d, H:i" }}</div>
+        </div>
+
+        <!-- Step 2: Processing -->
+        <div class="timeline-step {% if order.status_step >= 2 %}completed{% endif %} {% if order.status_step == 2 %}active{% endif %}">
+          <div class="step-icon">
+            <i class="bi bi-gear-fill"></i>
+          </div>
+          <div class="step-title">Processing</div>
+          <div class="step-desc">Warehouse packaging</div>
+        </div>
+
+        <!-- Step 3: Shipped -->
+        <div class="timeline-step {% if order.status_step >= 3 %}completed{% endif %} {% if order.status_step == 3 %}active{% endif %}">
+          <div class="step-icon">
+            <i class="bi bi-truck"></i>
+          </div>
+          <div class="step-title">Shipped</div>
+          <div class="step-desc">In transit with courier</div>
+        </div>
+
+        <!-- Step 4: Delivered -->
+        <div class="timeline-step {% if order.status_step >= 4 %}completed{% endif %} {% if order.status_step == 4 %}active{% endif %}">
+          <div class="step-icon">
+            <i class="bi bi-house-door-fill"></i>
+          </div>
+          <div class="step-title">Delivered</div>
+          <div class="step-desc">Package handed over</div>
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Tracking details snippet -->
+    <div style="background-color: var(--bg-body); border-radius: var(--radius-md); padding: 20px; border: 1px solid var(--border-color); margin-top: 30px;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px;">
+        <div>
+          <div style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;">TRACKING NUMBER</div>
+          <div style="font-family: monospace; font-size: 1rem; font-weight: 700; color: var(--primary);">
+            {{ order.tracking_number|default:"Pending assignment" }}
+          </div>
+        </div>
+        <div>
+          <div style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;">PAYMENT METHOD</div>
+          <div style="font-weight: 600;">{{ order.get_payment_method_display }} ({{ order.payment_status }})</div>
+        </div>
+        <div>
+          <div style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;">TOTAL AMOUNT</div>
+          <div style="font-size: 1.1rem; font-weight: 800; color: var(--secondary);">${{ order.total_amount }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Details & Shipping Info -->
+  <div class="checkout-grid">
+    <!-- Items Purchased -->
+    <div class="form-card">
+      <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+        Items in this Order
+      </h2>
+
+      <table class="cart-table">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Price</th>
+            <th>Qty</th>
+            <th style="text-align: right;">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in order.items.all %}
+            <tr>
+              <td>
+                <strong>{{ item.product_name }}</strong>
+              </td>
+              <td>${{ item.product_price }}</td>
+              <td>{{ item.quantity }}</td>
+              <td style="text-align: right; font-weight: 700;">${{ item.total_price }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+        <div class="summary-row">
+          <span style="color: var(--text-muted);">Items Subtotal:</span>
+          <span>${{ order.subtotal }}</span>
+        </div>
+        <div class="summary-row">
+          <span style="color: var(--text-muted);">Shipping:</span>
+          <span>${{ order.shipping_cost }}</span>
+        </div>
+        <div class="summary-row total">
+          <span>Grand Total:</span>
+          <span style="color: var(--primary);">${{ order.total_amount }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shipping Address & Info -->
+    <div class="form-card">
+      <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+        Delivery Destination
+      </h2>
+
+      <p style="font-weight: 700; margin-bottom: 4px;">{{ order.full_name }}</p>
+      <p style="color: var(--text-muted); margin-bottom: 4px;">{{ order.address }}</p>
+      <p style="color: var(--text-muted); margin-bottom: 12px;">{{ order.city }}, {{ order.state }} - {{ order.postal_code }}</p>
+
+      <div style="border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 12px; font-size: 0.9rem;">
+        <p><strong>Email:</strong> {{ order.email }}</p>
+        <p><strong>Phone:</strong> {{ order.phone }}</p>
+      </div>
+
+      {% if order.admin_notes %}
+        <div style="background-color: #f1f5f9; border-radius: var(--radius-sm); padding: 12px; margin-top: 15px; font-size: 0.85rem;">
+          <strong>Order Notes:</strong>
+          <p style="margin-top: 4px; color: var(--text-muted);">{{ order.admin_notes }}</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
